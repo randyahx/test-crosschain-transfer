@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"math/big"
 	"time"
@@ -16,23 +17,35 @@ import (
 	"test-crosschain-transfer/config"
 )
 
+var (
+	rpcUrl     = flag.String("rpc-url", "", "rpc url")
+	amount     = flag.Int64("amount", 100, "transfer amount(BNB)")
+	recipient  = flag.String("recipient-address", "", "recipient address")
+	privateKey = flag.String("private-key", "9b28f36fbd67381120752d6172ecdcf10e06ab2d9a1367aac00cdcd6ac7855d3", "sender's private key")
+)
+
 func main() {
-	client, err := ethclient.Dial(config.QA)
+	flag.Parse()
+	client, err := ethclient.Dial(*rpcUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	account := config.TestAccount
+	account := config.ExtAcc{RawKey: *privateKey}
 	account.Key, _ = crypto.HexToECDSA(account.RawKey)
-	tokenHub, _ := abi.NewTokenHub(common.HexToAddress(config.TokenHubContract), client)
+	tokenHub, err := abi.NewTokenHub(common.HexToAddress(config.TokenHubContract), client)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ops, _ := bind.NewKeyedTransactorWithChainID(account.Key, big.NewInt(config.ChainId))
-	ops.Value = new(big.Int).Mul(big.NewInt(1e17), big.NewInt(1001))
 	bnbAddr := common.HexToAddress("0x0000000000000000000000000000000000000000")
-	recipient := common.HexToAddress("0x0cdce3d8d17c0553270064cee95c73f17534d5a0")
-	amount := new(big.Int).Mul(big.NewInt(1e18), big.NewInt(100))
+	toAddr := common.HexToAddress(*recipient)
+	amt := new(big.Int).Mul(big.NewInt(1e18), big.NewInt(*amount))
 	expiredTime := time.Now().Unix() + 300
-	tx, err := tokenHub.TransferOut(ops, bnbAddr, recipient, amount, uint64(expiredTime))
+	ops.Value = new(big.Int).Add(new(big.Int).Mul(big.NewInt(1e17), big.NewInt(1)), amt)
+
+	tx, err := tokenHub.TransferOut(ops, bnbAddr, toAddr, amt, uint64(expiredTime))
 	if err != nil {
 		log.Fatal("Error transfer to BC:", err)
 	}
@@ -49,6 +62,6 @@ func main() {
 	if rc == nil {
 		log.Fatal("Transfer to BC failed")
 	} else {
-		log.Printf("Transfer to %s 100 BNB succeed", "0x0cdce3d8d17c0553270064cee95c73f17534d5a0")
+		log.Printf("Transfer to %s %d BNB succeed", *recipient, *amount)
 	}
 }
