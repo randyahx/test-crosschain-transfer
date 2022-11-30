@@ -20,7 +20,7 @@ import (
 var (
 	rpcUrl     = flag.String("rpc-url", "", "rpc url")
 	amount     = flag.Int64("amount", 100, "transfer amount(BNB)")
-	recipient  = flag.String("recipient-address", "", "recipient address")
+	recipient  = flag.String("to", "", "recipient address")
 	privateKey = flag.String("private-key", "9b28f36fbd67381120752d6172ecdcf10e06ab2d9a1367aac00cdcd6ac7855d3", "sender's private key")
 )
 
@@ -55,7 +55,7 @@ func main() {
 		if err == nil && rc.Status != 0 {
 			break
 		} else if rc != nil && rc.Status == 0 {
-			log.Fatal("Register relayer failed")
+			log.Fatal("Transfer to BC failed")
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
