@@ -21,7 +21,7 @@ import (
 var (
 	rpcUrl     = flag.String("rpc-url", "", "rpc url")
 	amount     = flag.Int64("amount", 100, "transfer amount(BNB)")
-	recipient  = flag.String("to", "", "recipient address")
+	recipient  = flag.String("to", "0x0cdce3d8d17c0553270064cee95c73f17534d5a0", "recipient address")
 	privateKey = flag.String("private-key", "9b28f36fbd67381120752d6172ecdcf10e06ab2d9a1367aac00cdcd6ac7855d3", "sender's private key")
 )
 
