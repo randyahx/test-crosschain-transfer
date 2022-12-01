@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"flag"
 	"log"
 	"math/big"
@@ -60,8 +61,8 @@ func main() {
 		time.Sleep(100 * time.Millisecond)
 	}
 	if rc == nil {
-		log.Fatal("Transfer to BC failed")
+		log.Fatalf("Transfer to BC failed. Tx hash:%s", hex.EncodeToString(tx.Hash().Bytes()))
 	} else {
-		log.Printf("Transfer to %s %d BNB succeed", *recipient, *amount)
+		log.Printf("Transfer to %s %d BNB succeed. Tx hash:%s", *recipient, *amount, hex.EncodeToString(tx.Hash().Bytes()))
 	}
 }
